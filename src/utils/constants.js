@@ -1,4 +1,5 @@
 export const WHITELIST_DOMAINS = [
-    'https://smart-home-front-end-4enj.vercel.app',
+    'http://localhost:5173',
+    // 'https://smart-home-front-end-4enj.vercel.app',
     
 ]
