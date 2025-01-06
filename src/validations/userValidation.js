@@ -25,8 +25,20 @@ const createNew = async (req, res, next) => {
                 "any.required": "Password is required.",
                 "string.empty": "Password is not allowed to be empty"
             }),
+        email: Joi.string()
+            .email()
+            .required()
+            .trim()
+            .strict()
+            .messages({
+                "string.email": "Please enter a valid email address.",
+                "any.required": "Email is required.",
+                "string.empty": "Email is not allowed to be empty"
+            }), // Email validation.
+        
     })
     try {
+        // console.log("IN")
         await correctCondition.validateAsync(req.body, {abortEarly: false})
         next()
         
