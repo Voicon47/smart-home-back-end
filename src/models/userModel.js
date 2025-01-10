@@ -32,26 +32,30 @@ const USER_COLLECTION_SCHEME = Joi.object({
         .max(50)
         .optional()
         .trim()
-        .strict(), // Optional first name.
+        .strict()
+        .default(null), // Optional first name.
 
     lastName: Joi.string()
         .min(1)
         .max(50)
         .optional()
         .trim()
-        .strict(), // Optional last name.
+        .strict()
+        .default(null), // Optional last name.
 
     phone: Joi.string()
         .pattern(/^\+?[1-9]\d{1,14}$/)
         .optional()
         .trim()
-        .strict(), // Optional phone number in E.164 format.
+        .strict()
+        .default(null), // Optional phone number in E.164 format.
 
     profilePictureUrl: Joi.string()
         .uri()
         .optional()
         .trim()
-        .strict(), // Optional URL for profile picture.
+        .strict()
+        .default(null), // Optional URL for profile picture.
 
     status: Joi.string()
         .valid('active', 'inactive', 'banned')
