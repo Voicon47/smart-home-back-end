@@ -1,7 +1,7 @@
 import Joi from 'joi'
 import { ObjectId } from 'mongodb';
 import { GET_DB } from '~/config/mongodb';
-import { sensorModel } from './sensorModel';
+// import { sensorModel } from './sensorModel';
 
 //Define Collection (Name & SCheme)
 

@@ -3,6 +3,7 @@ import { userModel } from "~/models/userModel"
 import ApiError from "~/utils/ApiError"
 
 const createNew = async(reqBody) => {
+    // eslint-disable-next-line no-useless-catch
     try {
         const newUser = {
             ...reqBody
@@ -20,6 +21,7 @@ const createNew = async(reqBody) => {
 }
 
 const getDetails = async(userId) => {
+    // eslint-disable-next-line no-useless-catch
     try {
         const user = await userModel.getDetails(userId)
         if(!user){
