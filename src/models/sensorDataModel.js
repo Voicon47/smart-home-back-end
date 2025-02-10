@@ -91,6 +91,17 @@ const findOneById = async (id) => {
         throw new Error(error)
     }
 }
+const getDataById = async (id) => {
+    try {
+        const result = await GET_DB().collection(SENSOR_DATA_COLLECTION_NAME).find({
+            sensorId: new ObjectId(String(id))
+        })
+        console.log(result.toArray())
+        return result.toArray()
+    } catch (error) {
+        throw new Error(error)
+    }
+}
 const getDataByYear = async (sensorId,type,year,month,day) => {
     try {
         const result = await GET_DB().collection(SENSOR_DATA_COLLECTION_NAME).aggregate([
@@ -339,6 +350,7 @@ export const sensorDataModel = {
     SENSOR_DATA_COLLECTION_SCHEME,
     findOneByName,
     findOneById,
+    getDataById,
     getDataByYear,
     getDataByMonth,
     getDataByDay,

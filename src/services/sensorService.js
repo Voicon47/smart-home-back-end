@@ -4,7 +4,7 @@ import { sensorDataModel } from "~/models/sensorDataModel"
 import { sensorModel } from "~/models/sensorModel"
 // eslint-disable-next-line no-unused-vars
 import ApiError from "~/utils/ApiError"
-const createNewSocket = async(sensorData, roomId) => {
+const createNewSensor = async(sensorData, roomId) => {
     // const type = data.type || "OTHER"
     // eslint-disable-next-line no-unused-vars
     const { type, name,...data } = sensorData;
@@ -37,6 +37,15 @@ const createNewSocket = async(sensorData, roomId) => {
     }
 }
 
+const getAllSensors = async() =>{
+    try {
+        const sensors = await sensorModel.getAllSensors()
+        return sensors
+    } catch (error) {
+        throw error
+    }
+}
 export const sensorService = {
-    createNewSocket
+    createNewSensor,
+    getAllSensors
 }

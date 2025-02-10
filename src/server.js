@@ -31,6 +31,7 @@ const START_SERVER = () => {
 
   //====================== HTTP SERVER ============================//
   // Start HTTP server
+  // console.log(env.LOCAL_DEV_APP_PORT)
   const server = app.listen(env.LOCAL_DEV_APP_PORT || process.env.PORT, () => {
     const host = env.BUILD_MODE === 'production' ? 'Production' : 'Local Dev'
     const port = env.BUILD_MODE === 'production' ? process.env.PORT : env.LOCAL_DEV_APP_PORT

@@ -64,10 +64,20 @@ const findOneById = async (id) => {
         throw new Error(error)
     }
 }
+const getAllSensors = async () => {
+    try {
+        const result = await GET_DB().collection(SENSOR_COLLECTION_NAME).find()
+        // console.log(result.)
+        return result.toArray()
+    } catch (error) {
+        throw new Error(error)
+    }
+}
 export const sensorModel = {
     SENSOR_COLLECTION_NAME,
     SENSOR_COLLECTION_SCHEME,
     findOneByName,
     findOneById,
+    getAllSensors,
     createNew
 }

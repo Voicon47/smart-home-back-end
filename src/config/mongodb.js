@@ -2,6 +2,7 @@
 import {MongoClient, ServerApiVersion} from 'mongodb'
 import { env } from './environment'
 let smartHomeDatabaseInstance = null
+console.log(env.MONGODB_URI)
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const mongoClientInstance = new MongoClient(env.MONGODB_URI,{
     serverApi: {

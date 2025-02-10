@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
-import { sensorDataService } from '~/services/sensorDataService'
+import { sensorService } from '~/services/sensorService'
 
 const createNew = async (req, res, next) => {
     try {
@@ -21,17 +21,6 @@ const getDetails = async (req, res, next) => {
         next(error)
     }
 }
-const getDataById = async (req, res, next) => {
-    try {
-        const sensorId = req.params.id 
-        // console.log(sensorId)
-        const data = await sensorDataService.getDataById(sensorId)
-        
-        res.status(StatusCodes.OK).json(data)
-    } catch (error) {
-        next(error)
-    }
-}
 
 const getDataByHour = async (req, res, next) => {
     try {
@@ -49,9 +38,14 @@ const getDataByHour = async (req, res, next) => {
     }
 }
 
-export const sensorDataController = {
-    createNew,
-    getDataById,
-    getDataByHour,
-    getDetails
+const getAllSensors = async (req, res, next) => {
+    try {
+        const sensors = await sensorService.getAllSensors()
+        res.status(StatusCodes.OK).json(sensors)
+    } catch (error) {
+        next(error)
+    }
+}
+export const sensorController = {
+    getAllSensors
 }

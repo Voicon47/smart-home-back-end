@@ -12,4 +12,6 @@ const Router = express.Router()
 Router.route('/')
     .get(sensorDataController.getDataByHour)
     .put()
+Router.route('/:id')
+    .get(sensorDataController.getDataById)
 export const sensorDataRoute = Router
