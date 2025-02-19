@@ -11,7 +11,7 @@ const Router = express.Router()
 
 Router.route('/')
     .get(sensorDataController.getDataByHour)
-    .put()
+    .post(sensorDataController.getDataByQuery)
 Router.route('/:id')
     .get(sensorDataController.getDataById)
 export const sensorDataRoute = Router

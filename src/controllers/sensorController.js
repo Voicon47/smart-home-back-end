@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
+import { sensorDataService } from '~/services/sensorDataService'
 import { sensorService } from '~/services/sensorService'
 
 const createNew = async (req, res, next) => {

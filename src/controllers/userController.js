@@ -12,6 +12,17 @@ const createNew = async (req, res, next) => {
         next(error)
     }
 }
+const getAllUsersByQuery = async (req, res, next) => {
+    try {
+        console.log(req.body.query)
+        const query = req.body.query
+        const user = await userService.getAllUsersByQuery(query)
+        res.status(StatusCodes.OK).json(user)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const getDetails = async (req, res, next) => {
     try {
         const userId = req.params.id 
@@ -25,5 +36,6 @@ const getDetails = async (req, res, next) => {
 
 export const userController = {
     createNew,
+    getAllUsersByQuery,
     getDetails
 }

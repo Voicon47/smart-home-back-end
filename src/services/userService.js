@@ -20,6 +20,19 @@ const createNew = async(reqBody) => {
     }
 }
 
+const getAllUsersByQuery = async(query) => {
+    // eslint-disable-next-line no-useless-catch
+    try {
+        const users = await userModel.getAllUsersByQuery(query)
+        if(!users){
+            throw new ApiError(StatusCodes.NOT_FOUND,'User not found!')
+        }
+        return users
+    } catch (error) {
+        throw error
+    }
+}
+
 const getDetails = async(userId) => {
     // eslint-disable-next-line no-useless-catch
     try {
@@ -34,5 +47,6 @@ const getDetails = async(userId) => {
 }
 export const userService = {
     createNew,
+    getAllUsersByQuery,
     getDetails
 }

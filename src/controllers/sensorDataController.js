@@ -32,7 +32,19 @@ const getDataById = async (req, res, next) => {
         next(error)
     }
 }
-
+const getDataByQuery = async (req, res, next) => {
+    try {
+         
+        console.log(req.body)
+        const {sensorId, status, query} = req.body
+        const data = await sensorDataService.getDataByQuery(sensorId, status, query)
+        // const data = await sensorDataService.getDataById(sensorId)
+        
+        res.status(StatusCodes.OK).json(data)
+    } catch (error) {
+        next(error)
+    }
+}
 const getDataByHour = async (req, res, next) => {
     try {
         const sensorId = req.query.sensorId || null; // Default to null if not provided
@@ -52,6 +64,7 @@ const getDataByHour = async (req, res, next) => {
 export const sensorDataController = {
     createNew,
     getDataById,
+    getDataByQuery,
     getDataByHour,
     getDetails
 }

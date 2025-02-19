@@ -102,6 +102,64 @@ const getDataById = async (id) => {
         throw new Error(error)
     }
 }
+const getDataByQuery = async (sensorId, status, query) => {
+    try {
+        // Ensure query is always a string (if provided)
+        const queryString = query ? String(query) : null;
+
+        // Base match stage
+        const matchStage = {
+            sensorId: new ObjectId(String(sensorId)),
+            _destroy: false
+        };
+
+        // If query exists, add regex filtering
+        if (queryString) {
+            matchStage.$or = [
+                { mq2: { $regex: queryString, $options: "i" } },
+                { temperature: { $regex: queryString, $options: "i" } },
+                { humidity: { $regex: queryString, $options: "i" } },
+                { flame: { $regex: queryString, $options: "i" } },
+                { pir: { $regex: queryString, $options: "i" } },
+                { createdAt: { $regex: queryString, $options: "i" } }
+            ];
+        }
+
+        const result = await GET_DB()
+            .collection(SENSOR_DATA_COLLECTION_NAME)
+            .aggregate([
+                // Convert numeric fields to string for regex matching
+                { 
+                    $addFields: { 
+                        mq2: { $toString: "$mq2" },
+                        temperature: { $toString: "$temperature" },
+                        humidity: { $toString: "$humidity" },
+                        flame: { $toString: "$flame" },
+                        pir: { $toString: "$pir" },
+                        createdAt: { $toString: "$createdAt" },
+                        // Convert `createdAt` timestamp to Date and Time
+                        createdAtDate: { 
+                            $dateToString: { format: "%Y-%m-%d", date: { $toDate: "$createdAt" }, timezone: "Asia/Ho_Chi_Minh" }
+                        },
+                        createdAtTime: { 
+                            $dateToString: { format: "%H:%M:%S", date: { $toDate: "$createdAt" }, timezone: "Asia/Ho_Chi_Minh" }
+                        }
+                    }
+                },
+                { $match: matchStage }, // Apply match conditions dynamically
+                { $sort: { createdAt: -1 } },
+                { $limit: 5}
+            ])
+            .toArray();
+
+        console.log(result.length);
+        return result;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+
 const getDataByYear = async (sensorId,type,year,month,day) => {
     try {
         const result = await GET_DB().collection(SENSOR_DATA_COLLECTION_NAME).aggregate([
@@ -351,6 +409,7 @@ export const sensorDataModel = {
     findOneByName,
     findOneById,
     getDataById,
+    getDataByQuery,
     getDataByYear,
     getDataByMonth,
     getDataByDay,
@@ -358,3 +417,36 @@ export const sensorDataModel = {
     createNew
 }
 
+ // const matchStage = {
+        //     sensorId: new ObjectId(String(sensorId)),
+        //     _destroy: false
+        // };
+        // console.log(query)
+        // // Add $or condition only if query is provided
+        // if (query) {
+        //     const numericQuery = parseFloat(query); // Convert query to number if possible
+
+        //     matchStage.$or = [
+        //         { mq2: !isNaN(numericQuery) ? numericQuery : { $regex: query, $options: "i" } },
+        //         { temperature: !isNaN(numericQuery) ? numericQuery : { $regex: query, $options: "i" } },
+        //         { humidity: !isNaN(numericQuery) ? numericQuery : { $regex: query, $options: "i" } },
+        //         { flame: !isNaN(numericQuery) ? numericQuery : { $regex: query, $options: "i" } },
+        //         { pir: !isNaN(numericQuery) ? numericQuery : { $regex: query, $options: "i" } },
+        //         { createdAt: !isNaN(numericQuery) ? numericQuery : { $regex: query, $options: "i" } }
+        //     ];
+        // }
+        // const result = await GET_DB()
+        // .collection(SENSOR_DATA_COLLECTION_NAME)
+        // .aggregate([
+        //     { $match: matchStage },
+        //     { $sort: { createdAt: -1 } }
+        // ])
+        // .toArray();
+
+        // const result = await GET_DB()
+        //     .collection(SENSOR_DATA_COLLECTION_NAME)
+        //     .aggregate([
+        //         { $match: matchStage },
+        //         { $sort: { createdAt: -1 } }
+        //     ])
+        //     .toArray();

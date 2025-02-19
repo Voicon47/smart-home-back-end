@@ -27,21 +27,29 @@ const USER_COLLECTION_SCHEME = Joi.object({
         .trim()
         .strict(), // Email validation.
 
-    firstName: Joi.string()
-        .min(1)
-        .max(50)
-        .optional()
-        .trim()
-        .strict()
-        .default(null), // Optional first name.
+    // firstName: Joi.string()
+    //     .min(1)
+    //     .max(50)
+    //     .optional()
+    //     .trim()
+    //     .strict()
+    //     .default(null), // Optional first name.
 
-    lastName: Joi.string()
+    // lastName: Joi.string()
+    //     .min(1)
+    //     .max(50)
+    //     .optional()
+    //     .trim()
+    //     .strict()
+    //     .default(null), // Optional last name.
+    fullName: Joi.string()
+        .pattern(/^[\p{L}\p{M}\s'.-]+$/u) // Supports Vietnamese and other Unicode letters
         .min(1)
-        .max(50)
-        .optional()
+        .max(100)
         .trim()
         .strict()
-        .default(null), // Optional last name.
+        .optional()
+        .default(null),
 
     phone: Joi.string()
         .pattern(/^\+?[1-9]\d{1,14}$/)
@@ -50,7 +58,7 @@ const USER_COLLECTION_SCHEME = Joi.object({
         .strict()
         .default(null), // Optional phone number in E.164 format.
 
-    profilePictureUrl: Joi.string()
+    imgUrl: Joi.string()
         .uri()
         .optional()
         .trim()
@@ -103,6 +111,38 @@ const findOneById = async (id) => {
     }
 }
 
+const getAllUsersByQuery = async (query) => {
+    
+    try {
+        const matchStage = {
+            status: "active",
+            _destroy: false
+        };
+
+        // If query is provided, apply search filters
+        if (query && query.trim() !== "") {
+            matchStage.$or = [
+                { userName: { $regex: query, $options: "i" } },
+                { email: { $regex: query, $options: "i" } },
+                { fullName: { $regex: query, $options: "i" } },
+                { phone: { $regex: query, $options: "i" } }
+            ];
+        }
+
+        const result = await GET_DB()
+            .collection(USER_COLLECTION_NAME)
+            .aggregate([
+                { $match: matchStage },
+                { $sort: { createAt: -1 } }, // Sort by most recent
+                { $limit: 20 } // Limit results for pagination
+            ])
+            .toArray(); // Convert cursor to an array
+
+        return result;
+    } catch (error) {
+        throw new Error(error)
+    }
+}
 const getDetails = async (id) => {
     
     try {
@@ -120,5 +160,6 @@ export const userModel = {
     USER_COLLECTION_SCHEME,
     createNew,
     findOneById,
+    getAllUsersByQuery,
     getDetails
 }
