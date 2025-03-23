@@ -3,12 +3,13 @@ import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError'
 
 const createNew = async (req, res, next) => {
+    
     const correctCondition = Joi.object({
         userName: Joi.string()
         .alphanum()
         .min(3)
         .max(30)
-        .required()
+        // .required()
         .messages({
             "string.alphanum": "Username must contain only letters and numbers.",
             "string.min": "Username must be at least 3 characters long.",
@@ -39,6 +40,7 @@ const createNew = async (req, res, next) => {
     })
     try {
         // console.log("IN")
+        console.log(req.body)
         await correctCondition.validateAsync(req.body, {abortEarly: false})
         next()
         

@@ -5,13 +5,16 @@ import { userValidation } from '~/validations/userValidation'
 
 const Router = express.Router()
 
-Router.route('/')
+Router.route('/register')
     .get()
     .post(userValidation.createNew, userController.createNew)
+Router.route('/login')
+    .get()
+    .post(userController.loginUser)
 Router.route('/search')
     .get()
     .post(userController.getAllUsersByQuery)
-    
+
 Router.route('/:id')
     .get(userController.getDetails)
     .put()

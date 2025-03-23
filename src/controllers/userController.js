@@ -34,8 +34,20 @@ const getDetails = async (req, res, next) => {
     }
 }
 
+const loginUser = async (req, res, next) => {
+    try {
+        const {email,password} = req.body 
+        const user = await userService.loginUser(email, password)
+
+        res.status(StatusCodes.OK).json(user)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export const userController = {
     createNew,
     getAllUsersByQuery,
-    getDetails
+    getDetails,
+    loginUser
 }

@@ -11,12 +11,11 @@ const USER_COLLECTION_SCHEME = Joi.object({
         .alphanum()
         .min(3)
         .max(30)
-        .required()
+        // .required()
         .trim()
         .strict(),
 
     password: Joi.string()
-        .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,30}$/)
         .required()
         .trim()
         .strict(), // Password: at least 1 uppercase, 1 lowercase, 1 number, 8-30 chars.
@@ -27,21 +26,6 @@ const USER_COLLECTION_SCHEME = Joi.object({
         .trim()
         .strict(), // Email validation.
 
-    // firstName: Joi.string()
-    //     .min(1)
-    //     .max(50)
-    //     .optional()
-    //     .trim()
-    //     .strict()
-    //     .default(null), // Optional first name.
-
-    // lastName: Joi.string()
-    //     .min(1)
-    //     .max(50)
-    //     .optional()
-    //     .trim()
-    //     .strict()
-    //     .default(null), // Optional last name.
     fullName: Joi.string()
         .pattern(/^[\p{L}\p{M}\s'.-]+$/u) // Supports Vietnamese and other Unicode letters
         .min(1)
@@ -110,7 +94,17 @@ const findOneById = async (id) => {
         throw new Error(error)
     }
 }
-
+const findOneByEmail = async (id) => {
+    try {
+        const result = await GET_DB().collection(USER_COLLECTION_NAME).findOne({
+            email: id,
+            _destroy: false
+        })
+        return result
+    } catch (error) {
+        throw new Error(error)
+    }
+}
 const getAllUsersByQuery = async (query) => {
     
     try {
@@ -154,6 +148,13 @@ const getDetails = async (id) => {
         throw new Error(error)
     }
 }
+// const loginUser = async(email, password) => {
+//     try {
+        
+//     } catch (error) {
+//         throw new Error(error)
+//     }
+// }
 
 export const userModel = {
     USER_COLLECTION_NAME,
@@ -161,5 +162,6 @@ export const userModel = {
     createNew,
     findOneById,
     getAllUsersByQuery,
-    getDetails
+    getDetails,
+    findOneByEmail
 }

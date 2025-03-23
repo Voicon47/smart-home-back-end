@@ -1,12 +1,18 @@
 import { StatusCodes } from "http-status-codes"
 import { userModel } from "~/models/userModel"
 import ApiError from "~/utils/ApiError"
+import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
+import { env } from "~/config/environment"
+const saltRound = 10
 
 const createNew = async(reqBody) => {
     // eslint-disable-next-line no-useless-catch
     try {
+        const hashPassword = await bcrypt.hash(reqBody.password, saltRound);
         const newUser = {
-            ...reqBody
+            ...reqBody,
+            password : hashPassword
         }
         //// Call to Model
         const createdUser = await userModel.createNew(newUser)
@@ -45,8 +51,57 @@ const getDetails = async(userId) => {
         throw error
     }
 }
+
+const loginUser = async(email, password) => {
+    try {
+        const user = await userModel.findOneByEmail(email)
+        if(!user){
+            throw new ApiError(StatusCodes.NOT_FOUND,'User not found!')
+        } else {
+            const isMatchPassword = await bcrypt.compare(password, user.password)
+            if(!isMatchPassword) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid password');
+            
+            const payload = {
+                email: user.email
+            }
+            const accessToken = jwt.sign(
+                payload,
+                env.JWT_SECRET,
+                {
+                    expiresIn: env.JWT_EXPIRE
+                }
+            )
+            const refreshToken = jwt.sign(
+                payload,
+                env.JWT_SECRET,
+                {
+                    expiresIn:'35d'
+                }
+            )
+            //create token 
+            console.log("Create token")
+            return {
+                status: 200,
+                message: "Login successful",
+                meta:{
+                    accessToken,
+                    refreshToken,
+                },
+                data : {
+                    email: user.email,
+                    fullName: user.fullName,
+                    role: user.role == "admin" ? 0 : 1
+                }
+            }
+        }
+    } catch (error) {
+        throw error
+    }
+}
+
 export const userService = {
     createNew,
     getAllUsersByQuery,
-    getDetails
+    getDetails,
+    loginUser
 }

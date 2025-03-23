@@ -10,8 +10,8 @@ import { corsOptions } from './config/cors'
 // import { sensorModel } from './models/sensorModel'
 // import { sensorService } from './services/sensorService'
 import webSocketServer from './sockets/socketServer'
-// import webSocketServer from './sockets/socketServer'
-// import { WebSocketServer } from 'ws'
+import { authHandlingMiddleware } from './middlewares/authHandlingMiddleware'
+
 
 const START_SERVER = () => {
   const app = express()
@@ -23,6 +23,9 @@ const START_SERVER = () => {
   //Enable req.body json data
   app.use(express.json())
   
+  // Authorization 
+  app.use(authHandlingMiddleware)
+
   //Use APIs v1
   app.use('/v1',APIs_V1)
 
