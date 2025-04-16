@@ -45,9 +45,19 @@ const loginUser = async (req, res, next) => {
     }
 }
 
+const loginUserWithGoogle = async (req, res, next) => {
+    try {
+        // console.log(req.body.idToken)
+        const user = await userService.loginUserWithGoogle(req.body.idToken)
+        res.status(StatusCodes.OK).json(user)
+    } catch (error) {
+        next(error)
+    }
+}
 export const userController = {
     createNew,
     getAllUsersByQuery,
     getDetails,
-    loginUser
+    loginUser,
+    loginUserWithGoogle
 }

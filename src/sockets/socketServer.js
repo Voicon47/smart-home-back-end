@@ -81,7 +81,7 @@ const webSocketServer = (httpServer) => {
   const processData = async (data) => {
     for (const sensor of data.sensors) {
       try {
-        await sensorService.createNewSocket(sensor, data.room);
+        await sensorService.createNewSensor(sensor, data.room);
         // console.log("Sensor:", createdSensor);
         // Add your update or creation logic here
       } catch (error) {

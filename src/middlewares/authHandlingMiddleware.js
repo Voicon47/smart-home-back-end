@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken'
 import { env } from '~/config/environment'
 
 export const authHandlingMiddleware = (req, res, next) => {
-    const white_list = ["/", "/register","/login", "/sensorData", "/sensor"]
+    const white_list = ["/", "/register","/login","/login-google", "/sensorData", "/sensor"]
     if(white_list.find(value => '/v1/user' + value === req.originalUrl || '/v1' + value === req.originalUrl)) {
         next()
     } else {

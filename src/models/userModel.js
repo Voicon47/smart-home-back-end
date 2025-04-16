@@ -27,9 +27,9 @@ const USER_COLLECTION_SCHEME = Joi.object({
         .strict(), // Email validation.
 
     fullName: Joi.string()
-        .pattern(/^[\p{L}\p{M}\s'.-]+$/u) // Supports Vietnamese and other Unicode letters
-        .min(1)
-        .max(100)
+        // .pattern(/^[\p{L}\p{M}\s'.-]+$/u) // Supports Vietnamese and other Unicode letters
+        .min(2)
+        .max(50)
         .trim()
         .strict()
         .optional()
@@ -80,6 +80,7 @@ const createNew = async (data) => {
         const createdUser = await GET_DB().collection(USER_COLLECTION_NAME).insertOne(validData)
         return createdUser
     } catch (error) {
+        // console.log(error)
         throw new Error(error) 
     }
 }

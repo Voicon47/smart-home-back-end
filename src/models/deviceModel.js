@@ -14,7 +14,10 @@ const DEVICER_COLLECTION_SCHEME = Joi.object({
         .required()
         .trim()
         .strict(), // Sensor name, max 100 chars.
-
+    // status: Joi.string()
+    //     .valid('ACTIVE', 'INACTIVE', 'MAINTENANCE', '') // Optional improvement if using known statuses
+    //     .optional(),
+    status: Joi.boolean().default(false),
     type: Joi.string()
         .valid('DHT11', 'MQ-2', 'FLAME', 'PIR', 'OTHER')
         .required(), // Enum type validation.
@@ -30,6 +33,20 @@ const getAllDevices = async() => {
         throw new Error(error)
     }
 }
+
+const getDeviceById = async(id) => {
+    try {
+        const result = await GET_DB().collection(DEVICE_COLLECTION_NAME).findOne({
+            _id: new ObjectId(String(id))
+        })
+        return result
+    } catch (error) {
+        throw new Error(error)
+    }
+}
 export const deviceModel = {
+    DEVICER_COLLECTION_SCHEME,
+    DEVICE_COLLECTION_NAME,
     getAllDevices,
+    getDeviceById
 }
