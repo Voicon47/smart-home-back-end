@@ -7,17 +7,17 @@ import { env } from "~/config/environment"
 import admin from "~/config/firebase"
 const saltRound = 10
 
-const createNew = async(reqBody) => {
+const createNew = async (reqBody) => {
     // eslint-disable-next-line no-useless-catch
     try {
         const existUser = await userModel.findOneByEmail(reqBody.email)
-        if(existUser) {
-            throw new ApiError(StatusCodes.CONFLICT,'User exisst!')
+        if (existUser) {
+            throw new ApiError(StatusCodes.CONFLICT, 'User exisst!')
         } else {
             const hashPassword = await bcrypt.hash(reqBody.password, saltRound);
             const newUser = {
                 ...reqBody,
-                password : hashPassword
+                password: hashPassword
             }
             //// Call to Model
             const createdUser = await userModel.createNew(newUser)
@@ -32,12 +32,12 @@ const createNew = async(reqBody) => {
     }
 }
 
-const getAllUsersByQuery = async(query) => {
+const getAllUsersByQuery = async (query) => {
     // eslint-disable-next-line no-useless-catch
     try {
         const users = await userModel.getAllUsersByQuery(query)
-        if(!users){
-            throw new ApiError(StatusCodes.NOT_FOUND,'User not found!')
+        if (!users) {
+            throw new ApiError(StatusCodes.NOT_FOUND, 'User not found!')
         }
         return users
     } catch (error) {
@@ -45,12 +45,12 @@ const getAllUsersByQuery = async(query) => {
     }
 }
 
-const getDetails = async(userId) => {
+const getDetails = async (userId) => {
     // eslint-disable-next-line no-useless-catch
     try {
         const user = await userModel.getDetails(userId)
-        if(!user){
-            throw new ApiError(StatusCodes.NOT_FOUND,'User not found!')
+        if (!user) {
+            throw new ApiError(StatusCodes.NOT_FOUND, 'User not found!')
         }
         return user
     } catch (error) {
@@ -58,15 +58,15 @@ const getDetails = async(userId) => {
     }
 }
 
-const loginUser = async(email, password) => {
+const loginUser = async (email, password) => {
     try {
         const user = await userModel.findOneByEmail(email)
-        if(!user){
-            throw new ApiError(StatusCodes.NOT_FOUND,'User not found!')
+        if (!user) {
+            throw new ApiError(StatusCodes.NOT_FOUND, 'User not found!')
         } else {
             const isMatchPassword = await bcrypt.compare(password, user.password)
-            if(!isMatchPassword) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid password');
-            
+            if (!isMatchPassword) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid password');
+
             const payload = {
                 email: user.email
             }
@@ -81,7 +81,7 @@ const loginUser = async(email, password) => {
                 payload,
                 env.JWT_SECRET,
                 {
-                    expiresIn:'35d'
+                    expiresIn: '35d'
                 }
             )
             //create token 
@@ -89,11 +89,12 @@ const loginUser = async(email, password) => {
             return {
                 status: 200,
                 message: "Login successful",
-                meta:{
+                meta: {
                     accessToken,
                     refreshToken,
                 },
-                data : {
+                data: {
+                    _id: user._id,
                     email: user.email,
                     fullName: user.fullName || "Guest",
                     role: user.role == "admin" ? 0 : 1
@@ -104,7 +105,7 @@ const loginUser = async(email, password) => {
         throw error
     }
 }
-const loginUserWithGoogle = async(idToken)=> {
+const loginUserWithGoogle = async (idToken) => {
     try {
         //1. Verify Firebase ID token
         // console.log("Begin google")
@@ -115,10 +116,10 @@ const loginUserWithGoogle = async(idToken)=> {
         // const imgUrl = decoded.picture || "";
         //2. Check if user already exists in MongoDb
         let user = await userModel.findOneByEmail(decoded.email);
-        
+
         //3. create new User
-        if(!user) {
-            console.log("Begin create new user",user)
+        if (!user) {
+            console.log("Begin create new user", user)
             const firebaseUid = decoded.uid;
             const newUser = {
                 email: decoded.email,
@@ -139,31 +140,31 @@ const loginUserWithGoogle = async(idToken)=> {
 }
 // Helper: JWT response
 const generateLoginFirebaseResponse = (user) => {
-  const payload = {
-    email: user.email
-  };
+    const payload = {
+        email: user.email
+    };
 
-  const accessToken = jwt.sign(payload, env.JWT_SECRET, {
-    expiresIn: env.JWT_EXPIRE
-  });
+    const accessToken = jwt.sign(payload, env.JWT_SECRET, {
+        expiresIn: env.JWT_EXPIRE
+    });
 
-  const refreshToken = jwt.sign(payload, env.JWT_SECRET, {
-    expiresIn: "35d"
-  });
+    const refreshToken = jwt.sign(payload, env.JWT_SECRET, {
+        expiresIn: "35d"
+    });
 
-  return {
-    status: 200,
-    message: "Login successful",
-    meta: {
-      accessToken,
-      refreshToken
-    },
-    data: {
-      email: user.email,
-      fullName: user.fullName,
-      role: user.role === "admin" ? 0 : 1
-    }
-  };
+    return {
+        status: 200,
+        message: "Login successful",
+        meta: {
+            accessToken,
+            refreshToken
+        },
+        data: {
+            email: user.email,
+            fullName: user.fullName,
+            role: user.role === "admin" ? 0 : 1
+        }
+    };
 };
 
 export const userService = {

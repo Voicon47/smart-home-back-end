@@ -17,7 +17,7 @@ const START_SERVER = async () => {
     console.log('✅ 2. Connected to MongoDB Cloud Atlas');
 
     console.log('1.1 Connecting to Redis...');
-    await CONNECT_REDIS();
+    // await CONNECT_REDIS();
     console.log('✅ 2. Connected to Redis');
 
     const app = express();

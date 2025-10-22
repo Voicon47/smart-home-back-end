@@ -2,11 +2,11 @@ import { StatusCodes } from 'http-status-codes'
 import { deviceModel } from '~/models/deviceModel'
 import { deviceScheduleModel } from '~/models/deviceScheduleModel'
 import ApiError from '~/utils/ApiError'
-const getAllDevices = async() => {
+const getAllDevices = async () => {
     try {
-        const devices = deviceModel.getAllDevices() 
-        if(!devices){
-            throw new ApiError(StatusCodes.NOT_FOUND,'Device not found!')
+        const devices = deviceModel.getAllDevices()
+        if (!devices) {
+            throw new ApiError(StatusCodes.NOT_FOUND, 'Device not found!')
         }
         return devices
     } catch (error) {
@@ -14,33 +14,60 @@ const getAllDevices = async() => {
     }
 }
 
-const createNewSchedule = async(data) => {
+const createNewSchedule = async (data) => {
     try {
-        const {deviceId, startTime, endTime, dayActive} = data
+        const { deviceId, startTime, endTime, dayActive } = data
         const existSchedule = await deviceScheduleModel.findScheduleByQuery(deviceId, startTime, endTime, dayActive)
         console.log(existSchedule)
-        if(existSchedule) {
+        if (existSchedule) {
             throw new ApiError(StatusCodes.CONFLICT, "Schedule already exists")
         } else {
             const createdSchedule = await deviceScheduleModel.createNewSchedule(data)
 
             const getNewSchedule = await deviceScheduleModel.findOneById(createdSchedule.insertedId)
-            
+
             return getNewSchedule
         }
-        
+
     } catch (error) {
         throw error
     }
 }
 
-const getAllScheduleByRoom = async() => {
+const getAllScheduleByRoom = async () => {
     try {
         const schedules = await deviceScheduleModel.getAllScheduleByRoom("677d0d50cc13de58fab8e379") // Suppose deviceId
-        if(!schedules) {
-            throw new ApiError(StatusCodes.NOT_FOUND,'Shedule not found!')
+        if (!schedules) {
+            throw new ApiError(StatusCodes.NOT_FOUND, 'Shedule not found!')
         }
         return schedules
+    } catch (error) {
+        throw error
+    }
+}
+const createOrUpdateDevice = async (deviceData, roomId) => {
+    const { type, name, state } = deviceData;
+
+    const newDevice = {
+        name: name,
+        type, // Type of the sensor
+        roomId, // Room ID associated with the sensor
+        state
+    };
+    try {
+        ///Check exist 
+        const existDevice = await deviceModel.findOneByName(newDevice.name)
+        if (existDevice) {
+            if (existDevice.state !== state) {
+                // Update state
+                const updatedDevice = await deviceModel.updateStateDevice(existDevice._id, state)
+                return updatedDevice
+            }
+        } else {
+            // Create new device
+            const createdSensor = await deviceModel.createNew(newDevice)
+            return createdSensor
+        }
     } catch (error) {
         throw error
     }
@@ -48,5 +75,6 @@ const getAllScheduleByRoom = async() => {
 export const deviceService = {
     getAllDevices,
     createNewSchedule,
-    getAllScheduleByRoom
+    getAllScheduleByRoom,
+    createOrUpdateDevice
 }
