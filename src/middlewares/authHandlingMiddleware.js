@@ -22,9 +22,9 @@ import { env } from '~/config/environment'
 export const authHandlingMiddleware = (req, res, next) => {
     const white_list = [
         "/",
-        "user/register",
-        "user/login",
-        "user/login-google",
+        "/user/register",
+        "/user/login",
+        "/user/login-google",
         "/sensorData",
         "/sensor",
         "/room"
