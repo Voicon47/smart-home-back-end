@@ -13,7 +13,7 @@ const createNew = async (req, res, next) => {
 }
 const getDetails = async (req, res, next) => {
     try {
-        const sensorId = req.params.id 
+        const sensorId = req.params.id
         const user = await sensorDataService.getDetails(sensorId)
 
         res.status(StatusCodes.OK).json(user)
@@ -23,10 +23,10 @@ const getDetails = async (req, res, next) => {
 }
 const getDataById = async (req, res, next) => {
     try {
-        const sensorId = req.params.id 
+        const sensorId = req.params.id
         // console.log(sensorId)
         const data = await sensorDataService.getDataById(sensorId)
-        
+
         res.status(StatusCodes.OK).json(data)
     } catch (error) {
         next(error)
@@ -34,26 +34,23 @@ const getDataById = async (req, res, next) => {
 }
 const getDataByQuery = async (req, res, next) => {
     try {
-         
+
         console.log(req.body)
-        const {sensorId, status, query} = req.body
-        const data = await sensorDataService.getDataByQuery(sensorId, status, query)
+        const { sensorId, status, query, type } = req.body
+        const data = await sensorDataService.getDataByQuery(sensorId, status, query, type)
         // const data = await sensorDataService.getDataById(sensorId)
-        
+
         res.status(StatusCodes.OK).json(data)
     } catch (error) {
         next(error)
     }
 }
-const getDataByHour = async (req, res, next) => {
+const getChartData = async (req, res, next) => {
     try {
-        const sensorId = req.query.sensorId || null; // Default to null if not provided
-        const year = req.query.year ? parseInt(req.query.year, 10) : 0;
-        const month = req.query.month ? parseInt(req.query.month, 10) : 0;
-        const day = req.query.day ? parseInt(req.query.day, 10) : 0;
+        const { sensorId, year, month, day, type } = req.body;
         console.log(month)
-        console.log("SensorId: ",sensorId,"Year: ", year, "Month: ",month,"Day: ", day)
-        const data = await sensorDataService.getDataByHour(sensorId,year,month,day)
+        console.log("SensorId: ", sensorId, "Year: ", year, "Month: ", month, "Day: ", day, "Type: ", type)
+        const data = await sensorDataService.getChartData("677faf7339a557ec6c1a9262", year, month, day, type)
 
         res.status(StatusCodes.OK).json(data)
     } catch (error) {
@@ -65,6 +62,6 @@ export const sensorDataController = {
     createNew,
     getDataById,
     getDataByQuery,
-    getDataByHour,
+    getChartData,
     getDetails
 }

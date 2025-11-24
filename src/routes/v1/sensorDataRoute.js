@@ -10,8 +10,10 @@ const Router = express.Router()
 //     // .post(sensorDataValidation.createNew, sensorDataController.createNew)
 
 Router.route('/')
-    .get(sensorDataController.getDataByHour)
+    // .get(sensorDataController.getDataByHour)
     .post(sensorDataController.getDataByQuery)
 Router.route('/:id')
     .get(sensorDataController.getDataById)
+Router.route('/chartData')
+    .post(sensorDataController.getChartData)
 export const sensorDataRoute = Router

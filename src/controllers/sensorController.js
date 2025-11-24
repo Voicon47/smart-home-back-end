@@ -14,7 +14,7 @@ const createNew = async (req, res, next) => {
 }
 const getDetails = async (req, res, next) => {
     try {
-        const sensorId = req.params.id 
+        const sensorId = req.params.id
         const user = await sensorDataService.getDetails(sensorId)
 
         res.status(StatusCodes.OK).json(user)
@@ -30,8 +30,8 @@ const getDataByHour = async (req, res, next) => {
         const month = req.query.month ? parseInt(req.query.month, 10) : 0;
         const day = req.query.day ? parseInt(req.query.day, 10) : 0;
         console.log(month)
-        console.log("SensorId: ",sensorId,"Year: ", year, "Month: ",month,"Day: ", day)
-        const data = await sensorDataService.getDataByHour(sensorId,year,month,day)
+        console.log("SensorId: ", sensorId, "Year: ", year, "Month: ", month, "Day: ", day)
+        const data = await sensorDataService.getDataByHour(sensorId, year, month, day)
 
         res.status(StatusCodes.OK).json(data)
     } catch (error) {

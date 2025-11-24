@@ -25,7 +25,7 @@ const getAllUsersByQuery = async (req, res, next) => {
 
 const getDetails = async (req, res, next) => {
     try {
-        const userId = req.params.id 
+        const userId = req.params.id
         const user = await userService.getDetails(userId)
 
         res.status(StatusCodes.OK).json(user)
@@ -36,7 +36,7 @@ const getDetails = async (req, res, next) => {
 
 const loginUser = async (req, res, next) => {
     try {
-        const {email,password} = req.body 
+        const { email, password } = req.body
         const user = await userService.loginUser(email, password)
 
         res.status(StatusCodes.OK).json(user)
@@ -47,7 +47,7 @@ const loginUser = async (req, res, next) => {
 
 const loginUserWithGoogle = async (req, res, next) => {
     try {
-        // console.log(req.body.idToken)
+        console.log(req.body.idToken)
         const user = await userService.loginUserWithGoogle(req.body.idToken)
         res.status(StatusCodes.OK).json(user)
     } catch (error) {

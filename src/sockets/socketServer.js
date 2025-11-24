@@ -17,7 +17,7 @@ const webSocketServer = (httpServer) => {
     ws.on('message', async (message) => {
       try {
         const data = JSON.parse(message);
-        console.log(data)
+        // console.log(data)
         // Handle initial handshake to set roles
         if (data.type === 'register') {
           const role = data.role; // Expected roles: 'esp32' or 'frontend'
@@ -52,6 +52,7 @@ const webSocketServer = (httpServer) => {
     }
 
     if (sender.role === 'esp32') {
+      // console.log(`Data from ESP32 (ID=${senderId}):`, data);
       // Forward data to all front-end clients
       broadcastToRole('frontend', data);
       // ESP32 sends data to the front-end
@@ -84,11 +85,13 @@ const webSocketServer = (httpServer) => {
   };
   const processEsp32Data = async (data) => {
     try {
+      const createdAt = Date.now()
+      console.log("Data received at:", createdAt);
       // --- handle sensors ---
       if (data.sensors && Array.isArray(data.sensors)) {
         for (const sensor of data.sensors) {
           try {
-            await sensorService.createOrUpdateSensor(sensor, data.room);
+            await sensorService.createOrUpdateSensor(sensor, data.room, createdAt);
             // console.log("Sensor:", sensor);
           } catch (error) {
             console.error(`Error processing sensor ${sensor.name}:`, error);

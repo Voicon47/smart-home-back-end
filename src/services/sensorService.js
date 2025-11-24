@@ -10,7 +10,7 @@ import ApiError from "~/utils/ApiError"
 const SENSOR_CACHE_KEY = 'all_sensors';
 const CACHE_EXPIRATION = 60 * 5; // 5 minutes (adjust as needed)
 
-const createOrUpdateSensor = async (sensorData, roomId) => {
+const createOrUpdateSensor = async (sensorData, roomId, createdAt) => {
     // const type = data.type || "OTHER"
     // eslint-disable-next-line no-unused-vars
     const { type, name, ...data } = sensorData;
@@ -29,6 +29,7 @@ const createOrUpdateSensor = async (sensorData, roomId) => {
             /// Update to sensor data
             const newSensorData = {
                 sensorId: String(existSensor._id),
+                createdAt: createdAt,
                 ...data
             }
             const createdSensorData = await sensorDataModel.createNew(newSensorData)
