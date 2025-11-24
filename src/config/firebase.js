@@ -1,6 +1,6 @@
 // /src/config/firebase.js
 import admin from 'firebase-admin';
-import serviceAccount from './firebase-service-account.json'; // Option2
+// import serviceAccount from './firebase-service-account.json'; // Option2
 import { env } from './environment';
 
 admin.initializeApp({
