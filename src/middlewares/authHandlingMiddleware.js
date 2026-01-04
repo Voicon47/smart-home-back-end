@@ -29,18 +29,21 @@ export const authHandlingMiddleware = (req, res, next) => {
         "/sensor",
         "/room"
     ];
-
+    // if (
+    //     req.headers.upgrade?.toLowerCase() === 'websocket' ||
+    //     req.originalUrl.startsWith('/ws')
+    // ) {
+    //     return next();
+    // }
     const url = req.originalUrl.replace('/v1', '');
-
+    console.log("URL: ", url);
     const isWhitelisted = white_list.some(wl => url.startsWith(wl));
 
     if (isWhitelisted) {
         return next();
     }
 
-    if (req.originalUrl.startsWith('/ws')) {
-        return next();
-    }
+
 
     // Authentication
     const token = req.headers.authorization?.split(' ')?.[1];

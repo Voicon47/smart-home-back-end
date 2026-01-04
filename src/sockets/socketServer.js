@@ -10,11 +10,6 @@ const webSocketServer = (httpServer) => {
     server: httpServer,
     path: '/v1'
   });
-  // WS cho ESP32
-  const wssESP32 = new WebSocketServer({
-    server: httpServer,
-    path: '/ws'
-  });
   const clients = new Map();
 
   wss.on('connection', (ws) => {
@@ -50,33 +45,6 @@ const webSocketServer = (httpServer) => {
       clients.delete(clientId)
     });
   });
-  wssESP32.on('connection', (ws) => {
-    const clientId = uuidv4();
-
-    clients.set(clientId, { ws, role: 'esp32' });
-    console.log('🤖 ESP32 connected:', clientId);
-
-    ws.send(JSON.stringify({
-      type: 'register_ack',
-      clientId,
-      role: 'esp32'
-    }));
-
-    ws.on('message', async (message) => {
-      try {
-        const data = JSON.parse(message.toString());
-        handleClientMessage(clientId, data);
-      } catch (err) {
-        console.error('ESP32 message error:', err);
-      }
-    });
-
-    ws.on('close', () => {
-      console.log('❌ ESP32 disconnected:', clientId);
-      clients.delete(clientId);
-    });
-  });
-
 
   const handleClientMessage = (senderId, data) => {
     const sender = clients.get(senderId);
