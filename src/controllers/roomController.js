@@ -25,8 +25,9 @@ const getAllScheduleByRoom = async (req, res, next) => {
 const getRoomByUser = async (req, res, next) => {
   try {
     const email = req.params.id
-    console.log("email:", email)
+    // console.log("email:", email)
     const rooms = await roomService.getRoomByUser(email)
+    console.log("Rooms in controller:", rooms)
     res.status(StatusCodes.OK).json(rooms)
   } catch (error) {
     next(error)

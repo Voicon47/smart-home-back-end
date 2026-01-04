@@ -72,7 +72,7 @@ const getAllDevices = async () => {
     }
 }
 
-const getDeviceById = async (id) => {
+const findOneById = async (id) => {
     try {
         const result = await GET_DB().collection(DEVICE_COLLECTION_NAME).findOne({
             _id: new ObjectId(String(id))
@@ -96,7 +96,7 @@ export const deviceModel = {
     DEVICE_COLLECTION_SCHEME,
     DEVICE_COLLECTION_NAME,
     getAllDevices,
-    getDeviceById,
+    findOneById,
     findOneByName,
     updateStateDevice,
     createNew

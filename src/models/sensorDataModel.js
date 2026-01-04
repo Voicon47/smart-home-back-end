@@ -15,7 +15,7 @@ const SENSOR_DATA_COLLECTION_SCHEME = Joi.object({
 
     type: Joi.string()
         // .required(
-        .valid('DHT11', 'MQ2', 'PIR', 'FLAME') // tùy bạn mở rộng
+        .valid('DHT11', 'MQ2', 'PIR', 'FLAME', 'PZEM') // tùy bạn mở rộng
         .messages({
             'any.only': 'sensor_type không hợp lệ'
         }),
@@ -26,7 +26,8 @@ const SENSOR_DATA_COLLECTION_SCHEME = Joi.object({
             'DHT11',
             'mq2',
             'motion',
-            'flame'
+            'flame',
+            'energy'
         ) // tùy bạn mở rộng
         .messages({
             'any.only': 'attribute không hợp lệ'
@@ -45,6 +46,12 @@ const SENSOR_DATA_COLLECTION_SCHEME = Joi.object({
             mq2: Joi.number().allow(null),
             motion: Joi.number().allow(null),
             flame: Joi.number().allow(null),
+            voltage: Joi.number().allow(null),
+            current: Joi.number().allow(null),
+            power: Joi.number().allow(null),
+            energy: Joi.number().allow(null),
+            pf: Joi.number().allow(null),
+            frequency: Joi.number().allow(null),
         })
     ),
     createdAt: Joi.number()
@@ -233,6 +240,66 @@ const getDataByYear = async (sensorId, type, year, month, day) => {
         throw new Error(error)
     }
 }
+const getDataByMonth = async (sensorId, year) => {
+    try {
+        // Start & end of year
+        const startOfYear = new Date(year, 0, 1);
+        startOfYear.setHours(0, 0, 0, 0);
+
+        const endOfYear = new Date(year + 1, 0, 1);
+        endOfYear.setHours(0, 0, 0, 0);
+
+        const result = await GET_DB()
+            .collection(SENSOR_DATA_COLLECTION_NAME)
+            .aggregate([
+                {
+                    $match: {
+                        sensorId: new ObjectId(String(sensorId)),
+                        createdAt: {
+                            $gte: startOfYear.getTime(),
+                            $lt: endOfYear.getTime()
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            month: {
+                                $month: {
+                                    date: { $toDate: "$createdAt" },
+                                    timezone: "Asia/Ho_Chi_Minh"
+                                }
+                            }
+                        },
+                        temperatureValue: { $avg: "$value.temperature" },
+                        humidityValue: { $avg: "$value.humidity" }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        labels: { $toString: "$_id.month" }, // "1" -> "12"
+                        temperature: {
+                            $round: ["$temperatureValue", 2]
+                        },
+                        humidity: {
+                            $round: ["$humidityValue", 2]
+                        }
+                    }
+                },
+                {
+                    $sort: { labels: 1 }
+                }
+            ])
+            .toArray();
+
+        console.log(result);
+        return result;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
 const getDataByWeek = async (sensorId, year, month, day) => {
     try {
         // Convert input to Date
@@ -272,8 +339,8 @@ const getDataByWeek = async (sensorId, year, month, day) => {
                                 }
                             }
                         },
-                        temperatureValue: { $avg: "$temperature" },
-                        humidityValue: { $avg: "$humidity" }
+                        temperatureValue: { $avg: "$value.temperature" },
+                        humidityValue: { $avg: "$value.humidity" }
                     }
                 },
                 {
@@ -476,8 +543,8 @@ const getDataByHour = async (sensorId, year, month, day) => {
                             }
                         }
                     },
-                    temperatureValue: { $avg: "$temperature" }, // Calculate the average of "value"
-                    humidityValue: { $avg: "$humidity" }, // Calculate the average of "value"
+                    temperatureValue: { $avg: "$value.temperature" }, // Calculate the average of "value"
+                    humidityValue: { $avg: "$value.humidity" }, // Calculate the average of "value"
                     // count: { $sum: 1 } // Optional: Count the number of documents
                 }
             },
@@ -511,6 +578,43 @@ const getDataByHour = async (sensorId, year, month, day) => {
     }
 }
 
+const getPzemDataById = async (sensorId) => {
+    try {
+        console.log("Model getPzemDataById:", sensorId);
+
+        const result = await GET_DB()
+            .collection(SENSOR_DATA_COLLECTION_NAME)
+            .aggregate([
+                {
+                    $match: {
+                        sensorId: new ObjectId(String(sensorId)),
+                        attribute: "energy",
+                        _destroy: false,
+                    },
+                },
+                { $sort: { createdAt: -1 } },   // ✅ sort TRƯỚC
+                { $limit: 1 },                  // ✅ chỉ lấy 1 record
+                {
+                    $project: {
+                        _id: 0,
+                        id: { $toString: "$_id" },
+                        voltage: { $ifNull: ["$value.voltage", 0] },
+                        current: { $ifNull: ["$value.current", 0] },
+                        power: { $ifNull: ["$value.power", 0] },
+                        frequency: { $ifNull: ["$value.frequency", 0] },
+                        pf: { $ifNull: ["$value.pf", 0] },
+                        energy: { $ifNull: ["$value.energy", 0] },
+                    },
+                },
+            ])
+            .toArray();
+
+        return result[0] || null;
+    } catch (error) {
+        throw new Error(error)
+    }
+}
+
 export const sensorDataModel = {
     SENSOR_DATA_COLLECTION_NAME,
     SENSOR_DATA_COLLECTION_SCHEME,
@@ -519,9 +623,11 @@ export const sensorDataModel = {
     getDataById,
     getDataByQuery,
     getDataByYear,
+    getDataByMonth,
     getDataByWeek,
     getDataByDay,
     getDataByHour,
+    getPzemDataById,
     createNew
 }
 

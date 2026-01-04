@@ -58,10 +58,23 @@ const getChartData = async (req, res, next) => {
     }
 }
 
+const getPzemData = async (req, res, next) => {
+    try {
+        const sensorId = req.params.id;
+        console.log("Pzem id", sensorId)
+        const data = await sensorDataService.getPzemData(sensorId)
+
+        res.status(StatusCodes.OK).json(data)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export const sensorDataController = {
     createNew,
     getDataById,
     getDataByQuery,
     getChartData,
+    getPzemData,
     getDetails
 }

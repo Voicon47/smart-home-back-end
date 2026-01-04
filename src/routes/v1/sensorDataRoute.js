@@ -16,4 +16,6 @@ Router.route('/:id')
     .get(sensorDataController.getDataById)
 Router.route('/chartData')
     .post(sensorDataController.getChartData)
+Router.route('/pzemData/:id')
+    .get(sensorDataController.getPzemData)
 export const sensorDataRoute = Router

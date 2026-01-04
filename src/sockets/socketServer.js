@@ -6,7 +6,10 @@ import { deviceService } from '~/services/deviceService';
 import { actionLogsService } from '~/services/actionLogsService';
 
 const webSocketServer = (httpServer) => {
-  const wss = new WebSocketServer({ server: httpServer });
+  const wss = new WebSocketServer({
+    server: httpServer,
+    path: '/v1'
+  });
   const clients = new Map();
 
   wss.on('connection', (ws) => {
@@ -52,9 +55,9 @@ const webSocketServer = (httpServer) => {
     }
 
     if (sender.role === 'esp32') {
-      // console.log(`Data from ESP32 (ID=${senderId}):`, data);
       // Forward data to all front-end clients
       broadcastToRole('frontend', data);
+      broadcastToRole('app', data);
       // ESP32 sends data to the front-end
       processEsp32Data(data)
 

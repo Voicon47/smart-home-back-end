@@ -61,27 +61,44 @@ const getRoomByUser = async (id) => {
           from: roomModel.ROOM_COLLECTION_NAME,
           localField: "roomId",
           foreignField: "_id",
-          as: "rooms"
+          as: "room"
+        }
+      },
+      { $unwind: "$room" },
+      // 🔥 count user per room
+      {
+        $lookup: {
+          from: USER_ROOM_COLLECTION_NAME,
+          let: { roomId: "$roomId" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$roomId", "$$roomId"] },
+                    { $eq: ["$_destroy", false] }
+                  ]
+                }
+              }
+            },
+            { $count: "totalUsers" }
+          ],
+          as: "userCount"
         }
       },
       {
         $project: {
-          rooms: {
-            $map: {
-              input: "$rooms",
-              as: "room",
-              in: {
-                _id: "$$room._id",
-                name: "$$room.name",
-                homeId: "$$room.homeId",
-              }
-            }
+          _id: "$room._id",
+          name: "$room.name",
+          homeId: "$room.homeId",
+          capacity: {
+            $ifNull: [{ $arrayElemAt: ["$userCount.totalUsers", 0] }, 0]
           }
         }
       }
 
     ]).toArray()
-    return result[0] || {}
+    return result
   } catch (error) {
     throw new Error(error)
   }

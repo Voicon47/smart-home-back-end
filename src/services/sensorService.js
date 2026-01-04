@@ -13,18 +13,19 @@ const CACHE_EXPIRATION = 60 * 5; // 5 minutes (adjust as needed)
 const createOrUpdateSensor = async (sensorData, roomId, createdAt) => {
     // const type = data.type || "OTHER"
     // eslint-disable-next-line no-unused-vars
-    const { type, name, ...data } = sensorData;
+    const { id, type, name, ...data } = sensorData;
 
     const newSensor = {
+        id: id,
         name: sensorData.name, // Use the key as the sensor's name
         type, // Type of the sensor
         roomId, // Room ID associated with the sensor
     };
-    // console.log(data)
+    // console.log(newSensor)
     // eslint-disable-next-line no-useless-catch
     try {
         ///Check exist 
-        const existSensor = await sensorModel.findOneByName(newSensor.name)
+        const existSensor = await sensorModel.findOneById(newSensor.id)
         if (existSensor) {
             /// Update to sensor data
             const newSensorData = {
@@ -32,6 +33,7 @@ const createOrUpdateSensor = async (sensorData, roomId, createdAt) => {
                 createdAt: createdAt,
                 ...data
             }
+            // console.log(newSensorData)
             const createdSensorData = await sensorDataModel.createNew(newSensorData)
             return createdSensorData
         } else {

@@ -75,9 +75,27 @@ const getDataByQuery = async (sensorId, status, query, type) => {
         throw error
     }
 }
+
+const getPzemData = async (sensorId) => {
+    try {
+        const existSensor = await sensorModel.findOneById(sensorId)
+        if (existSensor) {
+            const getData = await sensorDataModel.getPzemDataById(sensorId)
+            console.log("Service getPzemData: ", getData)
+            return getData
+        } else {
+            throw new ApiError(StatusCodes.NOT_FOUND, 'Sensor not found')
+        }
+        // return getData
+    } catch (error) {
+        throw error
+    }
+}
+
 export const sensorDataService = {
     getDataById,
     getDataByHour,
     getDataByQuery,
+    getPzemData,
     getChartData
 }

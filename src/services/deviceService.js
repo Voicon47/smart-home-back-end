@@ -46,21 +46,22 @@ const getAllScheduleByRoom = async () => {
     }
 }
 const createOrUpdateDevice = async (deviceData, roomId) => {
-    const { type, name, state } = deviceData;
+    const { id, type, name, status } = deviceData;
 
     const newDevice = {
+        id: id,
         name: name,
         type, // Type of the sensor
         roomId, // Room ID associated with the sensor
-        state
+        status
     };
     try {
         ///Check exist 
-        const existDevice = await deviceModel.findOneByName(newDevice.name)
+        const existDevice = await deviceModel.findOneById(newDevice.id)
         if (existDevice) {
-            if (existDevice.state !== state) {
+            if (existDevice.status !== status) {
                 // Update state
-                const updatedDevice = await deviceModel.updateStateDevice(existDevice._id, state)
+                const updatedDevice = await deviceModel.updateStateDevice(existDevice._id, status)
                 return updatedDevice
             }
         } else {

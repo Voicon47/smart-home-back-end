@@ -5,7 +5,7 @@ import ApiError from '~/utils/ApiError'
 const getRoomByUser = async (email) => {
   try {
     const user = await userModel.findOneByEmail(email)
-    // console.log("User", user)
+    console.log("User", user)
     if (user) {
       const allRooms = await userRoomModel.getRoomByUser(user._id)
       // if (!rooms) {
@@ -13,7 +13,7 @@ const getRoomByUser = async (email) => {
       // }
 
       console.log("Rooms", allRooms)
-      return allRooms.rooms
+      return allRooms
     } else {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Not found!')
     }

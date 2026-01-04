@@ -18,13 +18,13 @@ const SENSOR_COLLECTION_SCHEME = Joi.object({
         .strict(), // Sensor name, max 100 chars.
 
     type: Joi.string()
-        .valid('DHT11', 'MQ-2', 'FLAME', 'PIR', 'OTHER')
+        .valid('DHT11', 'MQ-2', 'FLAME', 'PIR', 'PZEM', 'OTHER')
         .required(), // Enum type validation.
     _destroy: Joi.boolean().default(false)
-        
+
 });
 const validateBeforeCreate = async (data) => {
-    return await SENSOR_COLLECTION_SCHEME.validateAsync(data, {abortEarly: false})
+    return await SENSOR_COLLECTION_SCHEME.validateAsync(data, { abortEarly: false })
 }
 
 const createNew = async (data) => {
@@ -40,7 +40,7 @@ const createNew = async (data) => {
         const createdUser = await GET_DB().collection(SENSOR_COLLECTION_NAME).insertOne(newSensorToAdd)
         return createdUser
     } catch (error) {
-        throw new Error(error) 
+        throw new Error(error)
     }
 }
 const findOneByName = async (nameSensor) => {
