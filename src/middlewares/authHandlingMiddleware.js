@@ -38,6 +38,10 @@ export const authHandlingMiddleware = (req, res, next) => {
         return next();
     }
 
+    if (req.originalUrl.startsWith('/ws')) {
+        return next();
+    }
+
     // Authentication
     const token = req.headers.authorization?.split(' ')?.[1];
     if (!token) {
