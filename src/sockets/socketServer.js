@@ -8,13 +8,13 @@ import { actionLogsService } from '~/services/actionLogsService';
 const webSocketServer = (httpServer) => {
   const wss = new WebSocketServer({
     server: httpServer,
-    path: '/v1'
-  });
-  const clients = new Map();
-  const wssESP32 = new WebSocketServer({
-    server: httpServer,
     path: '/ws'
   });
+  const clients = new Map();
+  // const wssESP32 = new WebSocketServer({
+  //   server: httpServer,
+  //   path: '/ws'
+  // });
   wss.on('connection', (ws) => {
     const clientId = uuidv4(); // Generate a unique ID for the client
     clients.set(clientId, { ws, role: null }); // Map the client ID to the WebSocket connection
