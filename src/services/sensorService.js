@@ -70,5 +70,5 @@ const getAllSensors = async () => {
 }
 export const sensorService = {
     createOrUpdateSensor,
-    getAllSensors
+    getAllSensors,
 }

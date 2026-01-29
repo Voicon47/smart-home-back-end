@@ -17,6 +17,9 @@ const ROOM_COLLECTION_SCHEME = Joi.object({
   // status: Joi.string()
   //     .valid('ACTIVE', 'INACTIVE', 'MAINTENANCE', '') // Optional improvement if using known statuses
   //     .optional(),
+  createdAt: Joi.date().timestamp('javascript').default(Date.now),
+  updatedAt: Joi.date().timestamp('javascript').default(null),
+
   _destroy: Joi.boolean().default(false)
 
 });
@@ -27,23 +30,174 @@ const validateBeforeCreate = async (data) => {
 const createNew = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
-    // console.log('Valid data: ',validData)
+    console.log('Valid data: ', validData)
 
-    const newDeviceToAdd = {
+    const newRoomToAdd = {
       ...validData,
-      roomId: new ObjectId(String(validData.roomId))
+      homeId: new ObjectId(String(validData.homeId))
     }
 
-    const createdDevice = await GET_DB().collection(ROOM_COLLECTION_NAME).insertOne(newDeviceToAdd)
-    return createdDevice
+    const createdRoom = await GET_DB().collection(ROOM_COLLECTION_NAME).insertOne(newRoomToAdd)
+    console.log(createdRoom)
+    return createdRoom
   } catch (error) {
     throw new Error(error)
   }
 }
 
+const findRoomById = async (roomId) => {
+  try {
+    const pipeline = [
+      {
+        $match: {
+          _id: new ObjectId(String(roomId)),
+          _destroy: false
+        }
+      },
+      {
+        $lookup: {
+          from: 'homes',
+          localField: 'homeId',
+          foreignField: '_id',
+          as: 'home'
+        }
+      },
+      {
+        $unwind: {
+          path: '$home',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          homeName: '$home.name'
+        }
+      },
+      { $limit: 1 }
+    ]
 
+    const result = await GET_DB()
+      .collection(ROOM_COLLECTION_NAME)
+      .aggregate(pipeline)
+      .toArray()
+
+    // trả về 1 object hoặc null
+    return result[0]
+  } catch (error) {
+  }
+}
+
+const findRoomByName = async (roomName) => {
+  try {
+    const result = await GET_DB().collection(ROOM_COLLECTION_NAME).findOne({
+      name: roomName,
+      _destroy: false
+    })
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const deleteRoomById = async (roomId) => {
+  try {
+    const result = await GET_DB()
+      .collection(ROOM_COLLECTION_NAME)
+      .findOneAndUpdate(
+        {
+          _id: new ObjectId(String(roomId)),
+          _destroy: false
+        },
+        {
+          $set: {
+            _destroy: true,
+            updatedAt: Date.now()
+          }
+        },
+        {
+          returnDocument: 'after'
+        }
+      )
+    console.log(result)
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+const getAllRoomsByQuery = async (query) => {
+
+  try {
+    const searchText = String(query).trim()
+    console.log(searchText)
+
+    const pipeline = [
+      // chỉ lấy room chưa bị xóa
+      {
+        $match: { _destroy: false }
+      },
+
+      // join homes
+      {
+        $lookup: {
+          from: 'homes',
+          localField: 'homeId',
+          foreignField: '_id',
+          as: 'home'
+        }
+      },
+
+      // chuyển home từ array → object
+      {
+        $unwind: {
+          path: '$home',
+          preserveNullAndEmptyArrays: true
+        }
+      }
+    ]
+
+    // search theo room.name HOẶC home.name
+    if (searchText !== '') {
+      pipeline.push({
+        $match: {
+          $or: [
+            { name: { $regex: searchText, $options: 'i' } },        // room name
+            { 'home.name': { $regex: searchText, $options: 'i' } }  // home name
+          ]
+        }
+      })
+    }
+
+    // select field trả về
+    pipeline.push(
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          homeName: '$home.name'
+        }
+      },
+      // { $sort: { createdAt: -1 } },
+      { $limit: 20 }
+    )
+
+    const result = await GET_DB()
+      .collection(ROOM_COLLECTION_NAME)
+      .aggregate(pipeline)
+      .toArray()
+    console.log(result)
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 export const roomModel = {
   ROOM_COLLECTION_NAME,
   ROOM_COLLECTION_SCHEME,
-  createNew
+  getAllRoomsByQuery,
+  createNew,
+  findRoomByName,
+  findRoomById,
+  deleteRoomById,
 }

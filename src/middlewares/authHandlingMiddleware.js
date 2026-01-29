@@ -27,7 +27,8 @@ export const authHandlingMiddleware = (req, res, next) => {
         "/login-google",
         "/sensorData",
         "/sensor",
-        "/room"
+        "/room",
+        "/notification"
     ];
     // if (
     //     req.headers.upgrade?.toLowerCase() === 'websocket' ||

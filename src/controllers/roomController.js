@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
+import { roomModel } from '~/models/roomModel'
 import { roomService } from '~/services/roomService'
 // import { roomService } from '~/services/roomService'
 
@@ -34,10 +35,47 @@ const getRoomByUser = async (req, res, next) => {
   }
 }
 
+const getAllRoomsByQuery = async (req, res, next) => {
+  try {
+    const { query } = req.query
+    console.log("Query", req.query)
+    const rooms = await roomService.getAllRoomsByQuery(query)
+    console.log(rooms)
+    res.status(StatusCodes.OK).json(rooms)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const createNew = async (req, res, next) => {
+  try {
+    ///Navigate data to service 
+    const createdRoom = await roomService.createNew(req.body)
+    res.status(StatusCodes.CREATED).json(createdRoom)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const deleteRoomById = async (req, res, next) => {
+  try {
+    ///Navigate data to service 
+    const roomId = req.params.id
+    const deletedRoom = await roomService.deleteRoomById(roomId)
+    console.log(deleteRoomById)
+    res.status(StatusCodes.OK).json(deletedRoom)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const roomController = {
   getRoomByUser,
+  createNew,
   createNewSchedule,
+  getAllRoomsByQuery,
   getAllScheduleByRoom,
+  deleteRoomById
 
 
 }

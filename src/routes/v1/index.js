@@ -6,6 +6,7 @@ import { sensorRoute } from './sensorRoute'
 import { deviceRoute } from './deviceRoute'
 import { conversationRoute } from './conversationRoute'
 import { roomRoute } from './roomRoute'
+import { notificationRoute } from './notificationRoute'
 
 const Router = express.Router()
 
@@ -19,4 +20,5 @@ Router.use('/sensor', sensorRoute)
 Router.use('/device', deviceRoute)
 Router.use('/conversation', conversationRoute)
 Router.use("/room", roomRoute)
+Router.use("/notification", notificationRoute)
 export const APIs_V1 = Router
