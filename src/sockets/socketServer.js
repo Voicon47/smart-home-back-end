@@ -10,8 +10,8 @@ import nodemailer from 'nodemailer'; // Added for SMTP email sending
 const transporter = nodemailer.createTransport({
   service: 'gmail', // Replace with your email service
   auth: {
-    user: process.env.EMAIL_USER || 'vandinhdung2003@gmail.com',
-    pass: process.env.EMAIL_PASS || 'vcim zier heyi muuh',
+    user: 'vandinhdung2003@gmail.com',
+    pass: 'vcim zier heyi muuh',
   },
 });
 
