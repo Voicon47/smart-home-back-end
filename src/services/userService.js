@@ -57,6 +57,18 @@ const getDetails = async (userId) => {
         throw error
     }
 }
+const deleteUserById = async (userId) => {
+    try {
+        const deletedUser = await userModel.deleteUserById(userId)
+        console.log("User Service: ", deletedUser)
+        if (!deletedUser) {
+            throw ApiError(StatusCodes.NOT_FOUND, "User not found")
+        }
+        return deletedUser
+    } catch (error) {
+        throw error
+    }
+}
 
 const loginUser = async (email, password) => {
     try {
@@ -171,6 +183,7 @@ export const userService = {
     createNew,
     getAllUsersByQuery,
     getDetails,
+    deleteUserById,
     loginUser,
     loginUserWithGoogle
 }

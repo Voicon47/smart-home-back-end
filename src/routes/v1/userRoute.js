@@ -5,6 +5,9 @@ import { userValidation } from '~/validations/userValidation'
 
 const Router = express.Router()
 
+Router.route('/')
+    .get()
+    .post(userController.createNew)
 Router.route('/register')
     .get()
     .post(userValidation.createNew, userController.createNew)
@@ -20,5 +23,6 @@ Router.route('/search')
 
 Router.route('/:id')
     .get(userController.getDetails)
+    .delete(userController.deleteUserById)
     .put()
 export const userRoute = Router

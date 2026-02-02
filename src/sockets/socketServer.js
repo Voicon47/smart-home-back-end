@@ -15,25 +15,25 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-
 const thresholds = {
   'MQ2': {
-    mq2: { maxWarning: 300, maxDanger: 500 }
+    mq2: { maxWarning: 1300, maxDanger: 1600 }
   },
   'DHT11': {
-    temperature: { maxWarning: 30, maxDanger: 35 }, // Example: temperature in Celsius
-    humidity: { minWarning: 30, maxWarning: 70, minDanger: 20, maxDanger: 80 }, // Example: humidity percentage
+    temperature: { maxWarning: 35, maxDanger: 40 }, // Example: temperature in Celsius
+    humidity: { minWarning: 30, maxWarning: 70, minDanger: 20, maxDanger: 85 }, // Example: humidity percentage
   },
   'PZEM': {
-    voltage: { minWarning: 210, maxWarning: 230, minDanger: 200, maxDanger: 240 }, // Example: voltage in V
+    voltage: { minWarning: 235, maxWarning: 240, minDanger: 245, maxDanger: 254 }, // Example: voltage in V
     current: { maxWarning: 2, maxDanger: 5 }, // Example: current in A
     power: { maxWarning: 400, maxDanger: 1000 }, // Example: power in W
-    frequency: { minWarning: 49, maxWarning: 51, minDanger: 48, maxDanger: 52 }, // Example: frequency in Hz
-    pf: { minWarning: 0.9, minDanger: 0.8 }, // Example: power factor (lower is worse)
+    // frequency: { minWarning: 49, maxWarning: 51, minDanger: 48, maxDanger: 52 }, // Example: frequency in Hz
+    // pf: { minWarning: 0.9, minDanger: 0.8 }, // Example: power factor (lower is worse)
     // energy: skipped as it's cumulative
   },
   // FLAME handled separately as boolean-like (0 = safe, non-zero = danger)
 };
+/////
 
 const webSocketServer = (httpServer) => {
   const wss = new WebSocketServer({
@@ -116,6 +116,17 @@ const webSocketServer = (httpServer) => {
       }
     }
   };
+  const sendNotificationToFrontend = (notification) => {
+    broadcastToRole("frontend", {
+      type: "notification",
+      data: notification,
+    });
+
+    broadcastToRole("app", {
+      type: "notification",
+      data: notification,
+    });
+  };
   const processEsp32Data = async (data) => {
     try {
       const createdAt = Date.now()
@@ -125,7 +136,7 @@ const webSocketServer = (httpServer) => {
       if (data.sensors && Array.isArray(data.sensors)) {
         for (const sensor of data.sensors) {
           try {
-            await sensorService.createOrUpdateSensor(sensor, data.room, createdAt);
+            // await sensorService.createOrUpdateSensor(sensor, data.room, createdAt);
             // console.log("Sensor:", sensor);
 
             // Check for exceeding limits
@@ -133,11 +144,11 @@ const webSocketServer = (httpServer) => {
             let message = '';
 
             if (sensor.type === 'FLAME') {
-              if (sensor.value !== 0) {
+              if (sensor.value !== 1) {
                 status = 'danger';
                 message = `FLAME sensor ${sensor.name} detected flame (value: ${sensor.value})`;
               }
-            } else if (['MQ2', 'DHT11', 'PZEM'].includes(sensor.type) && sensor.value !== null) {
+            } else if (['MQ2', 'DHT11'].includes(sensor.type) && sensor.value !== null) {
               let values = sensor.value;
               // For MQ2, wrap the single value as an object for consistency
               if (sensor.type === 'MQ2') {
@@ -201,7 +212,7 @@ const webSocketServer = (httpServer) => {
       if (data.devices && Array.isArray(data.devices)) {
         for (const device of data.devices) {
           try {
-            await deviceService.createOrUpdateDevice(device, data.room);
+            // await deviceService.createOrUpdateDevice(device, data.room);
             // console.log("Device:", device);
           } catch (error) {
             console.error(`Error processing device ${device.name}:`, error);
@@ -209,35 +220,135 @@ const webSocketServer = (httpServer) => {
         }
       }
 
-      // Send email if there are alerts
+      // Send  if there are alerts
       if (alerts.length > 0) {
-        const emailBody = alerts.map(a => `${a.status.toUpperCase()}: ${a.message}`).join('\n');
+        //Send email
+        console.log("Danger alert", alerts)
+        const emailBody = alerts.map(a => `
+        <div class="alert-detail ${a.status}">
+          <strong>${a.status.toUpperCase()}</strong><br/>
+          ${a.message}
+        </div>
+      `).join('');
         const overallStatus = alerts.some(a => a.status === 'danger') ? 'danger' : 'warning';
-        await sendEmail(overallStatus, emailBody, data.room);
+        // await sendEmail(overallStatus, emailBody, data.room);
+
+        //Send socket message
+        const createdAt = Date.now();
+
+        alerts.forEach(alert => {
+          sendNotificationToFrontend({
+            room: data.room,
+            status: alert.status === "danger" ? "Danger" : "Warning",
+            description: alert.message,
+            createdAt,
+          });
+        });
       }
     } catch (err) {
       console.error("Error processing room data:", err);
     }
   };
 
-  // Function to send email alert
-  const sendEmail = async (status, body, room) => {
-    const mailOptions = {
-      from: process.env.EMAIL_USER || 'your.email@gmail.com',
-      to: process.env.ALERT_RECIPIENT || 'recipient@email.com', // Configure recipient
-      subject: `${status.toUpperCase()} Alert in Room ${room}`,
-      text: `Alert details:\n${body}\n\nTimestamp: ${new Date().toISOString()}`,
-    };
-
-    try {
-      await transporter.sendMail(mailOptions);
-      console.log(`${status.toUpperCase()} email alert sent for room ${room}`);
-    } catch (error) {
-      console.error('Error sending email:', error);
-    }
-  };
 };
 
 
 
 export default webSocketServer;
+
+
+// Function to send email alert
+const sendEmail = async (status, body, room) => {
+  const timestamp = new Date().toISOString();
+  const htmlContent = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f6f8;
+        padding: 20px;
+      }
+      .container {
+        max-width: 650px;
+        background: #ffffff;
+        margin: auto;
+        padding: 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      }
+      h2 {
+        margin-top: 0;
+      }
+      .danger-title {
+        color: #c0392b;
+      }
+      .warning-title {
+        color: #d35400;
+      }
+      .alert-detail {
+        margin: 12px 0;
+        padding: 12px;
+        border-left: 5px solid;
+        border-radius: 4px;
+      }
+      .danger {
+        background: #fdecea;
+        border-color: #c0392b;
+      }
+      .warning {
+        background: #fff6e5;
+        border-color: #f39c12;
+      }
+      .meta {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 16px;
+      }
+      .footer {
+        margin-top: 24px;
+        font-size: 13px;
+        color: #777;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2 class="${status === 'danger' ? 'danger-title' : 'warning-title'}">
+        ${status.toUpperCase()} Alert – Room ${room}
+      </h2>
+  
+      <div class="meta">
+        <strong>Room ID:</strong> ${room}<br/>
+        <strong>Timestamp:</strong> ${new Date().toISOString()}
+      </div>
+  
+      ${body}
+  
+      <div class="footer">
+        ⚠️ This is an automated alert from the IoT Monitoring System.<br/>
+        Please investigate immediately if the issue persists.
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+  const mailOptions = {
+    from: process.env.EMAIL_USER || 'vandinhdung2003@gmail.com',
+    to: process.env.ALERT_RECIPIENT || 'perrydinh169@gmail.com', // Configure recipient
+    subject: `${status.toUpperCase()} Alert in Room ${room}`,
+    // text: `Alert details:\n${body}\n\nTimestamp: ${new Date().toISOString()}`,
+    html: htmlContent,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`${status.toUpperCase()} email alert sent for room ${room}`);
+  } catch (error) {
+    console.error('Error sending email:', error);
+  }
+};
+
+
+

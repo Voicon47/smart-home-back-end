@@ -7,13 +7,13 @@ import { GET_DB } from '~/config/mongodb';
 
 const USER_COLLECTION_NAME = 'users'
 const USER_COLLECTION_SCHEME = Joi.object({
-    userName: Joi.string()
-        .alphanum()
-        .min(3)
-        .max(30)
-        // .required()
-        .trim()
-        .strict(),
+    // userName: Joi.string()
+    //     .alphanum()
+    //     .min(3)
+    //     .max(30)
+    //     // .required()
+    //     .trim()
+    //     .strict(),
 
     password: Joi.string()
         .required()
@@ -36,11 +36,11 @@ const USER_COLLECTION_SCHEME = Joi.object({
         .default(null),
 
     phone: Joi.string()
+        .trim()
         .pattern(/^\+?[1-9]\d{1,14}$/)
         .optional()
-        .trim()
-        .strict()
-        .default(null), // Optional phone number in E.164 format.
+        .empty("")        // 👈 cho phép ""
+        .default(null),
 
     imgUrl: Joi.string()
         .uri()
@@ -60,7 +60,7 @@ const USER_COLLECTION_SCHEME = Joi.object({
         .default('user')
         .trim()
         .strict(), // Role with a default value.
-    
+
     createdAt: Joi.date().timestamp('javascript').default(Date.now),
 
     updatedAt: Joi.date().timestamp('javascript').default(null),
@@ -69,26 +69,28 @@ const USER_COLLECTION_SCHEME = Joi.object({
 });
 
 const validateBeforeCreate = async (data) => {
-    return await USER_COLLECTION_SCHEME.validateAsync(data, {abortEarly: false})
+    return await USER_COLLECTION_SCHEME.validateAsync(data, { abortEarly: false })
 }
 
 const createNew = async (data) => {
     try {
         const validData = await validateBeforeCreate(data)
-        console.log('Valid data: ',validData)
+        console.log('Valid data: ', validData)
 
         const createdUser = await GET_DB().collection(USER_COLLECTION_NAME).insertOne(validData)
         return createdUser
     } catch (error) {
         // console.log(error)
-        throw new Error(error) 
+        throw new Error(error)
     }
 }
 
 const findOneById = async (id) => {
     try {
         const result = await GET_DB().collection(USER_COLLECTION_NAME).findOne({
-            _id: new ObjectId(String(id))
+            _id: new ObjectId(String(id)),
+            _destroy: false
+
         })
         return result
     } catch (error) {
@@ -107,7 +109,7 @@ const findOneByEmail = async (id) => {
     }
 }
 const getAllUsersByQuery = async (query) => {
-    
+
     try {
         const matchStage = {
             status: "active",
@@ -139,7 +141,7 @@ const getAllUsersByQuery = async (query) => {
     }
 }
 const getDetails = async (id) => {
-    
+
     try {
         const result = await GET_DB().collection(USER_COLLECTION_NAME).findOne({
             _id: new ObjectId(String(id))
@@ -149,13 +151,31 @@ const getDetails = async (id) => {
         throw new Error(error)
     }
 }
-// const loginUser = async(email, password) => {
-//     try {
-        
-//     } catch (error) {
-//         throw new Error(error)
-//     }
-// }
+const deleteUserById = async (userId) => {
+    try {
+        const result = await GET_DB()
+            .collection(USER_COLLECTION_NAME)
+            .findOneAndUpdate(
+                {
+                    _id: new ObjectId(String(userId)),
+                    _destroy: false
+                },
+                {
+                    $set: {
+                        _destroy: true,
+                        updatedAt: Date.now()
+                    }
+                },
+                {
+                    returnDocument: 'after'
+                }
+            )
+        console.log(result)
+        return result
+    } catch (error) {
+        throw new Error(error)
+    }
+}
 
 export const userModel = {
     USER_COLLECTION_NAME,
@@ -164,5 +184,6 @@ export const userModel = {
     findOneById,
     getAllUsersByQuery,
     getDetails,
-    findOneByEmail
+    findOneByEmail,
+    deleteUserById
 }
