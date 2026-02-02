@@ -91,7 +91,7 @@ const webSocketServer = (httpServer) => {
       // ESP32 sends data to the front-end
       processEsp32Data(data)
 
-    } else if (sender.role === 'frontend') {
+    } else if (sender.role === 'frontend' || sender.role === 'app') {
       // Front-end sends a command to ESP32
       console.log(`Command from front-end (ID=${senderId}):`, data);
       // Forward command to all ESP32 clients
