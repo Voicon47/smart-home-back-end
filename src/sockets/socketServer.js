@@ -136,7 +136,7 @@ const webSocketServer = (httpServer) => {
       if (data.sensors && Array.isArray(data.sensors)) {
         for (const sensor of data.sensors) {
           try {
-            // await sensorService.createOrUpdateSensor(sensor, data.room, createdAt);
+            await sensorService.createOrUpdateSensor(sensor, data.room, createdAt);
             // console.log("Sensor:", sensor);
 
             // Check for exceeding limits
@@ -212,7 +212,7 @@ const webSocketServer = (httpServer) => {
       if (data.devices && Array.isArray(data.devices)) {
         for (const device of data.devices) {
           try {
-            // await deviceService.createOrUpdateDevice(device, data.room);
+            await deviceService.createOrUpdateDevice(device, data.room);
             // console.log("Device:", device);
           } catch (error) {
             console.error(`Error processing device ${device.name}:`, error);
@@ -231,7 +231,7 @@ const webSocketServer = (httpServer) => {
         </div>
       `).join('');
         const overallStatus = alerts.some(a => a.status === 'danger') ? 'danger' : 'warning';
-        // await sendEmail(overallStatus, emailBody, data.room);
+        await sendEmail(overallStatus, emailBody, data.room);
 
         //Send socket message
         const createdAt = Date.now();
